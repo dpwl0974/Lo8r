@@ -1,2 +1,3 @@
-*.html linguist-vendored=ture
-*.css linguist-vendored=true
+* linguist-vendored
+*.javascript linguist-vendored=false
+*.pug linguist-vendored=false
