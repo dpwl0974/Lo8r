@@ -39,4 +39,5 @@ process.on("SIGTERM", () => {
     process.exit(0);
   });
 });
-require("./locations.js");
+require('./locations.js');
+require('./users');

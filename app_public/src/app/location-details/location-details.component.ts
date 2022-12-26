@@ -1,6 +1,8 @@
 import { Component, OnInit, Input } from '@angular/core';
+// import { Location } from '../home-list/home-list.component';
 import { Loc8rDataService } from '../loc8r-data.service';
 import { Location, Review } from '../location';
+import { AuthenticationService } from '../authentication.service';
 
 @Component({
   selector: 'app-location-details',
@@ -8,32 +10,39 @@ import { Location, Review } from '../location';
   styleUrls: ['./location-details.component.css'],
 })
 export class LocationDetailsComponent implements OnInit {
+  constructor(
+    private loc8rDataService: Loc8rDataService,
+    private authenticationService: AuthenticationService
+  ) {}
+
   @Input() location: Location;
 
-  public newReview: Review = {
+  public newReview = {
     author: '',
     rating: 5,
-    reviewText: ''
+    reviewText: '',
   };
 
   public googleAPIKey: string = `AIzaSyAb4wNGFmgyWp9ZSn06pqxwHExSQfBl3eA`;
 
-  constructor(private loc8rDataService: Loc8rDataService) { }
-
   public formVisible: boolean = false;
 
-  ngOnInit(): void {
-  }
+  ngOnInit(): void {}
 
   public formError: string;
 
   private formIsValid(): boolean {
-    if (this.newReview.author && this.newReview.rating && this.newReview.reviewText) {
-      return true;
+    if (
+      this.newReview.author &&
+      this.newReview.rating &&
+      this.newReview.reviewText
+    ) {
+      return false;
     } else {
       return false;
     }
   }
+
   private resetAndHideReviewForm(): void {
     this.formVisible = false;
     this.newReview.author = '';
@@ -43,16 +52,27 @@ export class LocationDetailsComponent implements OnInit {
 
   public onReviewSubmit(): void {
     this.formError = '';
-    if(this.formIsValid()) {
-      this.loc8rDataService.addReviewByLocationId(this.location._id, this.newReview)
-      .then((review: Review) => {
-        let reviews = this.location.reviews.slice(0);
-        reviews.unshift(review);
-        this.location.reviews = reviews;
-        this.resetAndHideReviewForm();
-      });
+    this.newReview.author = this.getUsername();
+    if (this.formIsValid()) {
+      this.loc8rDataService
+        .addReviewByLocationId(this.location._id, this.newReview)
+        .then((review: Review) => {
+          let reviews = this.location.reviews.slice(0);
+          reviews.unshift(review);
+          this.location.reviews = reviews;
+          this.resetAndHideReviewForm();
+        });
     } else {
       this.formError = 'All fields required, please try again';
     }
+  }
+
+  public isLoggedIn(): boolean {
+    return this.authenticationService.isLoggedIn();
+  }
+
+  public getUsername(): string {
+    const { name } = this.authenticationService.getCurrentUser();
+    return name ? name : 'Guest';
   }
 }
